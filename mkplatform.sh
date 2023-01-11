@@ -13,13 +13,13 @@ fi
 
 C=$(pwd)
 A=../../armbian
-P="bananapi-${ver}"
+P="bananapi${ver}"
 B=current
 if [ ${ver} = "m1" ]
 then
   T="bananapi"
 else
-  T="bananapi-${ver}"
+  T="bananapi${ver}"
 fi
 
 # Make sure we grab the right version
