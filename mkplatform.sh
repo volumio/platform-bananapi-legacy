@@ -21,37 +21,39 @@ then
 else
   T="bananapi${ver}"
 fi
+K="sunxi"
 
 # Make sure we grab the right version
 ARMBIAN_VERSION=$(cat ${A}/VERSION)
 
 # Custom patches
 echo "Adding custom patches"
-ls "${C}"/patches/
-mkdir -p ${A}/userpatches/kernel/sunxi-"${B}"/
-cp "${C}/patches/"*.patch "${A}"/userpatches/kernel/sunxi-"${B}"/
+ls "${C}/patches/"
+mkdir -p "${A}"/userpatches/kernel/"${K}"-"${B}"/
+rm -rf "${A}"/userpatches/kernel/"${K}"-"${B}"/*.patch
+cp "${C}"/patches/*.patch "${A}"/userpatches/kernel/"${K}"-"${B}"/
 
 # Custom kernel Config
-if [ -e "${C}"/kernel-config/*.config ]
+if [ -e "${C}"/kernel-config/linux-"${K}"-"${B}".config ]
 then
   echo "Copy custom Kernel config"
-  ls "${C}"/kernel-config/*.config
-  cp "${C}"/kernel-config/*.config "${A}"/userpatches/
+  ls "${C}"/kernel-config/linux-"${K}"-"${B}".config
+  cp "${C}"/kernel-config/linux-"${K}"-"${B}".config "${A}"/userpatches/
 fi
 
 # Select specific Kernel and/or U-Boot version
 rm -rf "${A}"/userpatches/lib.config
-if [ -e "${C}/kernel-ver/${P}"*.config ]
+if [ -e "${C}"/kernel-ver/"${P}".config ]
 then
   echo "Copy specific kernel/uboot version config"
-  cp "${C}/kernel-ver/${P}"*.config "${A}"/userpatches/lib.config
+  cp "${C}"/kernel-ver/"${P}"*.config "${A}"/userpatches/lib.config
 fi
 
 cd ${A}
 ARMBIAN_HASH=$(git rev-parse --short HEAD)
-echo "Building for BananaPi ${ver} -- with Armbian ${ARMBIAN_VERSION} -- $B"
+echo "Building for $P -- with Armbian ${ARMBIAN_VERSION} -- $B"
 
-./compile.sh docker KERNEL_ONLY=yes BOARD="${T}" BRANCH=${B} RELEASE=buster KERNEL_CONFIGURE=no EXTERNAL=yes BUILD_KSRC=no BUILD_DESKTOP=no "${armbian_extra_flags[@]}"
+./compile.sh BOARD="${T}" BRANCH="${B}" RELEASE=buster KERNEL_CONFIGURE=no EXTERNAL=yes BUILD_KSRC=no BUILD_DESKTOP=no BUILD_ONLY=u-boot,kernel,armbian-firmware "${armbian_extra_flags[@]}"
 
 echo "Done!"
 
@@ -62,10 +64,10 @@ mkdir -p "${P}"/u-boot
 mkdir -p "${P}"/lib/firmware
 mkdir -p "${P}"/boot/overlay-user
 # Keep a copy for later just in case
-cp "${A}/output/debs/linux-headers-${B}-sunxi_${ARMBIAN_VERSION}"_* "${C}"
+cp "${A}/output/debs/linux-headers-${B}-${K}_${ARMBIAN_VERSION}"_* "${C}"
 
-dpkg-deb -x "${A}/output/debs/linux-dtb-${B}-sunxi_${ARMBIAN_VERSION}"_* "${P}"
-dpkg-deb -x "${A}/output/debs/linux-image-${B}-sunxi_${ARMBIAN_VERSION}"_* "${P}"
+dpkg-deb -x "${A}/output/debs/linux-dtb-${B}-${K}_${ARMBIAN_VERSION}"_* "${P}"
+dpkg-deb -x "${A}/output/debs/linux-image-${B}-${K}_${ARMBIAN_VERSION}"_* "${P}"
 dpkg-deb -x "${A}/output/debs/linux-u-boot-${B}-${T}_${ARMBIAN_VERSION}"_* "${P}"
 dpkg-deb -x "${A}/output/debs/armbian-firmware_${ARMBIAN_VERSION}"_* "${P}"
 
@@ -88,10 +90,13 @@ for dts in "${C}"/overlay-user/overlays-"${P}"/*.dts; do
     cp "${dts_file}.dtbo" "${P}"/boot/overlay-user
   fi
 done
-cp "${A}"/config/bootscripts/boot-sunxi.cmd "${P}"/boot/boot.cmd
-touch "${P}"/boot/.next # Signal mainline kernel
-mkimage -c none -A arm -T script -d "${P}"/boot/boot.cmd "${P}"/boot/boot.scr
 
+# Copy and compile boot script
+cp "${A}"/config/bootscripts/boot-"${K}".cmd "${P}"/boot/boot.cmd
+mkimage -C none -A arm -T script -d "${P}"/boot/boot.cmd "${P}"/boot/boot.scr
+
+# Signal mainline kernel
+touch "${P}"/boot/.next
 
 # Prepare boot parameters
 cp "${C}"/bootparams/"${P}".armbianEnv.txt "${P}"/boot/armbianEnv.txt
