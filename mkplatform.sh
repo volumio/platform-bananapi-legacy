@@ -12,7 +12,7 @@ else
 fi
 
 C=$(pwd)
-A=../../armbian
+A=../../armbian-master
 P="bananapi${ver}"
 B=current
 if [ ${ver} = "m1" ]
@@ -90,6 +90,14 @@ for dts in "${C}"/overlay-user/overlays-"${P}"/*.dts; do
     cp "${dts_file}.dtbo" "${P}"/boot/overlay-user
   fi
 done
+
+# Add extras
+if [ -e "${C}"/extras/extras-"${P}"/asound.state ]
+then
+  echo "Copy asound.state config file"
+  mkdir -p "${P}"/var/lib/alsa
+  cp "${C}"/extras/extras-"${P}"/asound.state "${P}"/var/lib/alsa/asound.state
+fi
 
 # Copy and compile boot script
 cp "${A}"/config/bootscripts/boot-"${K}".cmd "${P}"/boot/boot.cmd
