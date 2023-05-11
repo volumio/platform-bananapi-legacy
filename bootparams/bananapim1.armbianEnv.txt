@@ -1,5 +1,5 @@
-verbosity=8
-bootlogo=false
+verbosity=0
+bootlogo=true
 console=both
 disp_mode=1920x1080p60
 overlay_prefix=sun7i-a20
