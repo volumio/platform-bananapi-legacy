@@ -109,8 +109,11 @@ touch "${P}"/boot/.next
 # Prepare boot parameters
 cp "${C}"/bootparams/"${P}".armbianEnv.txt "${P}"/boot/armbianEnv.txt
 
+# Remove unnecessary firmware files
+rm -rf "${P}"/lib/firmware/qcom
+
 echo "Creating device tarball.."
-tar cJf "${P}_${B}.tar.xz" "$P"
+XZ_OPT=-9 tar cJf "${P}_${B}.tar.xz" "$P"
 
 echo "Renaming tarball for Build scripts to pick things up"
 mv "${P}_${B}.tar.xz" "${P}.tar.xz"
