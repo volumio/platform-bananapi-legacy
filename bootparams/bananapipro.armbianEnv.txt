@@ -1,0 +1,11 @@
+verbosity=0
+bootlogo=true
+console=both
+disp_mode=1920x1080p60
+overlay_prefix=sun7i-a20
+rootdev=/dev/mmcblk0p2
+rootfstype=ext4
+usbstoragequirks=0x2537:0x1066:u,0x2537:0x1068:u
+extraargs=imgpart=/dev/mmcblk0p2 imgfile=/volumio_current.sqsh net.ifnames=0
+overlays=analog-codec spdif-out i2c2
+user_overlays=
